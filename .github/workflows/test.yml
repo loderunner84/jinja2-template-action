@@ -1,0 +1,104 @@
+name: 'Continuous Testing'
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  test-script:
+    name: Script Tests
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Install bats
+        id: install-bats
+        run: ./test/install_bats.sh
+
+      - name: Install Jinja2-cli
+        id: install-jinja2
+        run: pip install jinja2-cli
+
+      - name: Test
+        id: script-test
+        run: ./test/bats/bin/bats --report-formatter junit test/test_process_file.bats
+
+      - name: Testspace client install & config
+        id: testspace_init
+        if: always() && hashFiles('report.xml') != ''
+        uses: testspace-com/setup-testspace@v1
+        with:
+          domain: ${{github.repository_owner}}
+
+      - name: Testspace push test content
+        if: always() && (steps.testspace_init.outcome == 'success')
+        run: |
+          testspace "[Unit Tests]report.xml"
+
+      - name: Publish Test Results in GitHub
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: report.xml
+          check_name: 'Unit Test Results'
+
+  test-action:
+    name: GitHub Actions Test
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+    if: (github.event_name == 'pull_request') && (github.base_ref == 'main')
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Install bats
+        id: install-bats
+        run: ./test/install_bats.sh
+
+      - name: Test Local Action
+        id: test-action
+        uses: ./
+        env:
+          TEST: integ
+
+      - name: Check If Template file is managed
+        id: test-action-result
+        run: ./test/bats/bin/bats --report-formatter junit test/test_action.bats
+
+      - name: Testspace client install & config
+        id: testspace_init
+        if: always() && hashFiles('report.xml') != ''
+        uses: testspace-com/setup-testspace@v1
+        with:
+          domain: ${{github.repository_owner}}
+
+      - name: Testspace push test content
+        if: always() && (steps.test-action-result.outcome == 'success')
+        run: |
+          testspace "[Integ Tests]report.xml"
+
+      - name: Publish Test Results in GitHub
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: report.xml
+          check_name: 'Integ Test Results'
+
+
+
+
+
