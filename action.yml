@@ -1,0 +1,19 @@
+name: 'Jinja2 Engine Repo'
+description: 'Use the Jinja2 templating engine on multiple files'
+author: 'fletort'
+branding:
+  icon: 'sliders'
+  color: 'red'
+# inputs:
+#   templates_mask:
+#     description:
+#       'Mask Used to detect templates files'
+#     default: '*.j2'
+runs:
+  using: 'composite'
+  steps:
+    - name: "Manage Dynamic Template"
+      shell: bash
+      run: |
+        pip install jinja2-cli
+        find . -name '*.j2' -exec ./process_file.sh {} \;
