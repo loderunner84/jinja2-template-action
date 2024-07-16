@@ -16,4 +16,4 @@ runs:
       shell: bash
       run: |
         pip install jinja2-cli
-        find . -name '*.j2' -exec ./process_file.sh {} \;
+        find . -name '*.j2' -exec ${{github.action_path}}/process_file.sh {} \;
