@@ -1,2 +1,6 @@
 # bats junit test result file
-report.xml
+__pycache__
+.coverage
+coverage.*
+report.*
+results.*

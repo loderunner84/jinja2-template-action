@@ -2,6 +2,7 @@ name: 'Continuous Testing'
 
 on:
   push:
+  pull_request: # Need to have coverallsapp action comment in the pull_request
 
 permissions:
   contents: read
@@ -13,24 +14,65 @@ jobs:
     permissions:
       checks: write
       pull-requests: write
+      contents: write
 
     steps:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4
 
-      - name: Install bats
+      - name: Install Test Tool
         id: install-bats
-        run: ./test/install_bats.sh
+        run: pip install pytest coverage pytest-html pytest-cov
 
-      - name: Install Jinja2-cli
+      - name: Install Jinja2
         id: install-jinja2
-        run: pip install jinja2-cli
+        run: pip install jinja2
 
       - name: Test
         id: script-test
-        run: ./test/bats/bin/bats --report-formatter junit test/test_process_file.bats
+        # Add option `-html=report.html --self-contained-html` to pytest to get html output if need on test
+        # Add `coverage html` command to get html output on coverage if needed
+        run: |
+          pytest --cov=action --junitxml report.xml --pyargs action
+          coverage xml
 
+      - name: Publish Coverage Report to Coveralls.io
+        id: coverage
+        if: always() && hashFiles('coverage.xml') != ''
+        uses: coverallsapp/github-action@v2
+
+      - name: Code Coverage Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        if: always() && hashFiles('coverage.xml') != ''
+        with:
+          filename: coverage.xml
+          badge: true
+          fail_below_min: true
+          format: markdown
+          hide_branch_rate: true
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: '60 80'
+      
+      # As irongut/CodeCoverageSummary does not support file by file mode, add it
+      # See https://github.com/irongut/CodeCoverageSummary/issues/236
+      - name: Write Coverage to Job Summary
+        run: |
+          cat code-coverage-results.md > my-code-coverage-results.md
+          echo "\`\`\`" >> my-code-coverage-results.md
+          coverage report >> my-code-coverage-results.md
+          echo "\`\`\`" >> my-code-coverage-results.md
+          cat my-code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          recreate: true
+          path: my-code-coverage-results.md
+          
       - name: Testspace client install & config
         id: testspace_init
         if: always() && hashFiles('report.xml') != ''
@@ -41,7 +83,11 @@ jobs:
       - name: Testspace push test content
         if: always() && (steps.testspace_init.outcome == 'success')
         run: |
-          testspace "[Unit Tests]report.xml"
+          output=$(testspace "[Unit Tests]report.xml" --link=coveralls)
+          REGEX="(https://[a-z0-9]+.testspace.com/spaces/[0-9]+/result_sets/[0-9]+)"
+          [[ $output =~ $REGEX ]]
+          result_set_link="${BASH_REMATCH[1]}"
+          echo "[TestSpace Test Result set]($result_set_link)" >> $GITHUB_STEP_SUMMARY
 
       - name: Publish Test Results in GitHub
         uses: EnricoMi/publish-unit-test-result-action@v2
