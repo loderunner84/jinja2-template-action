@@ -23,12 +23,37 @@ Environement variable as used as with the jinja2 cli, with a _kind_ of `environ`
 
 ## Usage
 
-<!-- start usage -->
+### Using Environment Variable
 
 ```yaml
 - uses: fletort/jinja2-template-action@v1
+  env:
+    TEST: my_value
 ```
-<!-- end usage -->
+
+Environment variables are used as with jinja2 cli:
+```
+{{ environ('TEST') }}
+```
+
+### Using Input Variables
+
+```yaml
+- uses: fletort/jinja2-template-action@v1
+  with:
+    variables: |
+      TEST1=mytest
+      TEST2=isfunny
+```
+
+
+### Actions inputs
+
+
+| Name | Description | Default |
+| ---- | ----------- | ------- |
+| `variables` | Variable to substitute in the jinja templates. Must be Key, value pairs in .env file format (key=value). | "" |
+
 
 ## Code Quality
 

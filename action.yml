@@ -4,16 +4,19 @@ author: 'fletort'
 branding:
   icon: 'sliders'
   color: 'red'
-# inputs:
-#   templates_mask:
-#     description:
-#       'Mask Used to detect templates files'
-#     default: '*.j2'
+inputs:
+  variables:
+    description:
+      'Key, value pairs in .env file format (key=value)'
+    required: false
+    default: ''
 runs:
   using: 'composite'
   steps:
     - name: "Manage Dynamic Template"
       shell: bash
       run: |
+        # Need to export multiline variables input to pass it to python script
+        export INPUT_VARIABLES="${{ inputs.variables }}"
         pip install -r ${{github.action_path}}/requirements.txt
-        python3 ${{github.action_path}}/action/main.py
+        python3 ${{github.action_path}}/entrypoint.py
