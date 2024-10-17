@@ -15,5 +15,5 @@ runs:
     - name: "Manage Dynamic Template"
       shell: bash
       run: |
-        pip install jinja2-cli
+        pip install -r ${{github.action_path}}/requirements.txt
         python3 ${{github.action_path}}/action/main.py
