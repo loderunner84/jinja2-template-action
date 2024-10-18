@@ -46,6 +46,31 @@ Environment variables are used as with jinja2 cli:
       TEST2=isfunny
 ```
 
+### Using Workflow Github contextual Information
+
+Some of the [contextual information about workflow runs](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs)
+are available inside your jinja Template:
+
+- github
+- job
+- runner
+- strategy
+- matrix
+
+As part of an expression, you can access context information using one of two syntaxes.
+Index syntax: `github['sha']`
+Property dereference syntax: `github.sha`
+
+```
+{{ github.repository }}
+{{ job.status }}
+{{ runner.os }}
+{{ strategy.job_index }}
+{{ matrix.your_matrix_variable_name }}
+```
+
+Note: All strategy information key contains dashes that must me marked as underscore in jinja expression: `${{ strategy.job-index }}` becomes `{{ strategy.job_index }}`.
+
 
 ### Actions inputs
 

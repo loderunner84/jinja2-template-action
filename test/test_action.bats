@@ -6,14 +6,8 @@ setup() {
     load 'test_helper/bats-file/load'
 }
 
-@test "environement variable" {
-  assert_file_not_exist test/env-var/template.j2
-  assert_file_exist test/env-var/template
-  run -0 cmp -s test/env-var/template test/env-var/result 
-}
-
-@test "input variables" {
-  assert_file_not_exist test/many-var/template.j2
-  assert_file_exist test/many-var/template
-  run -0 cmp -s test/many-var/template test/many-var/result 
+@test "Test Action with all possible entries" {
+  assert_file_not_exist all_test.j2
+  assert_file_exist all_test
+  run -0 cmp -s all_test expected
 }

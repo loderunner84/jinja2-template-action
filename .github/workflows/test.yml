@@ -102,6 +102,14 @@ jobs:
     permissions:
       checks: write
       pull-requests: write
+    strategy:
+      matrix:
+        test: [1]
+    env: 
+      VAR_TEST1_VALUE: mytest
+      VAR_TEST2_VALUE: isfunny
+      TEST: integ
+
     steps:
       - name: Checkout
         id: checkout
@@ -111,21 +119,45 @@ jobs:
         id: install-bats
         run: ./test/install_bats.sh
 
+      - name: Prepare Test File
+        run: |
+          echo "{{ github.repository }}" > all_test.j2
+          echo "${{ github.repository }}" > expected
+          echo "{{ github.repository_owner }}" >> all_test.j2
+          echo "${{ github.repository_owner }}" >> expected
+          echo "{{ github.event.repository.license.key }}" >> all_test.j2
+          echo "${{ github.event.repository.license.key }}" >> expected
+          echo "{{ job.status }}" >> all_test.j2
+          echo "${{ job.status }}" >> expected
+          echo "{{ runner.os }}" >> all_test.j2
+          echo "${{ runner.os }}" >> expected
+          echo "{{ strategy.job_index }}" >> all_test.j2
+          echo "${{ strategy.job-index }}" >> expected
+          echo "{{ matrix.test }}" >> all_test.j2
+          echo "${{ matrix.test }}" >> expected
+          echo "{{ environ('TEST') }}" >> all_test.j2
+          echo "${{ env.TEST }}" >> expected
+          echo "{{ TEST1 }}" >> all_test.j2
+          echo "${{ env.VAR_TEST1_VALUE }}" >> expected
+          echo "{{ TEST2 }}" >> all_test.j2
+          echo "${{ env.VAR_TEST2_VALUE }}" >> expected
+
+          echo "" >> all_test.j2
+          cat all_test.j2
+          cat expected
+
       - name: Test Local Action
         id: test-action
-        uses: ./
-        env:
-          TEST: integ
-          #keep_template: true
+        uses: ./   
         with:
+          #keep_template: true
           variables: |
-            TEST1=mytest
-            TEST2=isfunny
+            TEST1=${{ env.VAR_TEST1_VALUE }}
+            TEST2=${{ env.VAR_TEST2_VALUE }}
 
       - name: Check If Template file is managed
         id: test-action-result
         run: |
-          cat test/many-var/template
           ./test/bats/bin/bats --report-formatter junit test/test_action.bats
 
       - name: Testspace client install & config
