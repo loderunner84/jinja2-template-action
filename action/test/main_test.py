@@ -33,6 +33,15 @@ class TestMain(unittest.TestCase):
         os.remove("test/env-var/template")
         subprocess.run("git restore test/env-var/template.j2", shell = True, executable="/bin/bash")
 
+    def test_renderFile_keep_file(self):
+        m = Main(keep_template=True)
+        self.assertFalse(os.path.isfile("test/env-var/template"), "New File does not exist before")
+        m.renderFile("test/env-var/template.j2")
+        self.assertTrue(os.path.isfile("test/env-var/template"), "Template file is renamed")
+        self.assertTrue(os.path.isfile("test/env-var/template.j2"), "Original File is NOT deleted")
+        os.remove("test/env-var/template")
+        subprocess.run("git restore test/env-var/template.j2", shell = True, executable="/bin/bash")
+
     def test_renderFile_manyVariables(self):
         m = Main()
         m.addVariables("""

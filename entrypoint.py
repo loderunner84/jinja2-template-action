@@ -4,8 +4,9 @@ from action.main import Main
 
 @click.command()
 #@click.option('--variables', help='Variables', default=None)
-def main():
-    main = Main()
+@click.option('--keep_template', is_flag=True)
+def main(keep_template):
+    main = Main(keep_template=keep_template)
     variables = os.environ.get('INPUT_VARIABLES', '')
     if variables:
         main.addVariables(variables)

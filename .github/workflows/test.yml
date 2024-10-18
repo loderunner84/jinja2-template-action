@@ -116,6 +116,7 @@ jobs:
         uses: ./
         env:
           TEST: integ
+          #keep_template: true
         with:
           variables: |
             TEST1=mytest

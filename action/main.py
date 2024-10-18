@@ -2,9 +2,10 @@ import os
 from jinja2 import Template, Environment, FileSystemLoader
 
 class Main:
-    def __init__(self, extensions=('.j2'), basepath='./'):
+    def __init__(self, extensions=('.j2'), basepath='./', keep_template=False):
         self.ext = extensions
         self.basepath = basepath
+        self.keep_template = keep_template
         self.env = Environment(
             loader=FileSystemLoader(self.basepath)
         )
@@ -24,7 +25,8 @@ class Main:
         with open(f"{filePath}".rsplit(".", 1)[0], 'w') as out:
             out.write(self.env.get_template( f"{filePath}").render(self.data))
             out.flush()
-        os.remove(f"{filePath}")
+        if not self.keep_template:
+            os.remove(f"{filePath}")
 
     def renderAll(self):
         for path, dirc, files in os.walk(self.basepath):

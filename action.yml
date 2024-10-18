@@ -10,6 +10,10 @@ inputs:
       'Key, value pairs in .env file format (key=value)'
     required: false
     default: ''
+  keep_template:
+    description:
+      'Put to `true` to keep original template file.'
+    default: false
 runs:
   using: 'composite'
   steps:
@@ -19,4 +23,6 @@ runs:
         # Need to export multiline variables input to pass it to python script
         export INPUT_VARIABLES="${{ inputs.variables }}"
         pip install -r ${{github.action_path}}/requirements.txt
-        python3 ${{github.action_path}}/entrypoint.py
+        keep_template=""
+        if [[ "${{inputs.keep_template}}" == "true" ]]; then keep_template="--keep_template"; fi
+        python3 ${{github.action_path}}/entrypoint.py ${keep_template}
