@@ -1,0 +1,15 @@
+name: 'Tags'
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
+jobs:
+  tags:
+    runs-on: ubuntu-latest
+    name: 'Additional Tags'
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: vweevers/additional-tags-action@v2
