@@ -53,6 +53,7 @@ Environment variables are used as with jinja2 cli:
 | Name | Description | Default |
 | ---- | ----------- | ------- |
 | `variables` | Variable to substitute in the jinja templates. Must be Key, value pairs in .env file format (key=value). | "" |
+| `keep_template` | Put to `true` to keep original template file. | `false` |
 
 
 ## Code Quality

@@ -22,6 +22,22 @@ class TestEntrypoint(unittest.TestCase):
 
         self.assertFalse(mock_instance.addVariables.called, "addVariables is not called")
         self.assertTrue(mock_instance.renderAll.called, "renderAll is called")
+
+    @patch('entrypoint.Main', spec=True)
+    def test_main_keepTemplate(self, MainClassMock):
+        # Get the mock instance for MainClassMock
+        mock_instance = MainClassMock.return_value
+
+        # Call the Method with keep_template
+        runner = CliRunner()
+        result = runner.invoke(main, ['--keep_template'])
+      
+        #print(MainClassMock.call_args.kwargs.get('keep_template'))
+        self.assertTrue(MainClassMock.call_args.kwargs.get('keep_template'))
+
+        # Call the Method without keep_template
+        result = runner.invoke(main)
+        self.assertFalse(MainClassMock.call_args.kwargs.get('keep_template'))
     
     @patch('entrypoint.Main', spec=True)
     def test_main_envVar(self, MainClassMock):
