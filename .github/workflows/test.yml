@@ -34,7 +34,7 @@ jobs:
         # Add option `-html=report.html --self-contained-html` to pytest to get html output if need on test
         # Add `coverage html` command to get html output on coverage if needed
         run: |
-          pytest --cov=action --junitxml report.xml --pyargs action
+          pytest --cov --junitxml report.xml
           coverage xml
 
       - name: Publish Coverage Report to Coveralls.io
@@ -116,10 +116,16 @@ jobs:
         uses: ./
         env:
           TEST: integ
+        with:
+          variables: |
+            TEST1=mytest
+            TEST2=isfunny
 
       - name: Check If Template file is managed
         id: test-action-result
-        run: ./test/bats/bin/bats --report-formatter junit test/test_action.bats
+        run: |
+          cat test/many-var/template
+          ./test/bats/bin/bats --report-formatter junit test/test_action.bats
 
       - name: Testspace client install & config
         id: testspace_init
