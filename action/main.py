@@ -1,4 +1,5 @@
 import os
+import json
 from jinja2 import Template, Environment, FileSystemLoader
 
 class Main:
@@ -13,6 +14,8 @@ class Main:
         # Keep the environ method in template as whe have in the 
         #jinja2 cli in the first version of this action
         self.env.globals["environ"] = lambda key: os.environ.get(key)
+        # Also add env variable in a classic way env.VAR_NAME
+        self.data["env"] = dict(os.environ)
 
     def addVariables(self, variables):
         for variable in variables.split("\n"):
@@ -20,6 +23,28 @@ class Main:
             if clean_variable != "":
                 name, value = clean_variable.split("=", 1)
                 self.data.update({name: value})
+
+    def addJsonSection(self, sectionName, jsonContent):
+        '''
+        Add Json Data in a given section to the Data available to the template engine
+          Parameters:
+            sectionName (str): Name of the added section. The jsconContent will be encapsuled in this key.
+            jsonContent (str/dict): Json content added in the key defined by sectionName
+        '''
+        if isinstance(jsonContent, str):
+            data = json.loads(jsonContent)
+        elif isinstance(jsonContent, dict):
+            data = jsonContent
+        else:
+            raise Exception(f"Unknown type for jsonContent: {type(jsonContent)}")
+        
+        # protect again key contening dashes (it is the case in the keys of strategy context for example)
+        problematic_keys = [key for key in data.keys() if '-' in key] 
+        for problematic_key in problematic_keys:
+            new_key = problematic_key.replace("-", "_")
+            data[new_key] = data.pop(problematic_key)
+        
+        self.data[sectionName] = data
     
     def renderFile(self, filePath):
         with open(f"{filePath}".rsplit(".", 1)[0], 'w') as out:
