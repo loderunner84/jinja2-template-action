@@ -141,6 +141,8 @@ jobs:
           echo "${{ env.VAR_TEST1_VALUE }}" >> expected
           echo "{{ TEST2 }}" >> all_test.j2
           echo "${{ env.VAR_TEST2_VALUE }}" >> expected
+          echo "{{ env.TEST }}" >> all_test.j2
+          echo "${{ env.TEST }}" >> expected
 
           echo "" >> all_test.j2
           cat all_test.j2

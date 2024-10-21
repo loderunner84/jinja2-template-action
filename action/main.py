@@ -14,6 +14,8 @@ class Main:
         # Keep the environ method in template as whe have in the 
         #jinja2 cli in the first version of this action
         self.env.globals["environ"] = lambda key: os.environ.get(key)
+        # Also add env variable in a classic way env.VAR_NAME
+        self.data["env"] = dict(os.environ)
 
     def addVariables(self, variables):
         for variable in variables.split("\n"):

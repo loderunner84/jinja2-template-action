@@ -35,6 +35,10 @@ Environment variables are used as with jinja2 cli:
 ```
 {{ environ('TEST') }}
 ```
+Or as other contextual github information:
+```
+{{ env.TEST }}
+```
 
 ### Using Input Variables
 

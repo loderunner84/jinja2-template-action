@@ -14,13 +14,43 @@ class TestMain(unittest.TestCase):
         except OSError:
             pass
 
+    def test_init_env_var_by_key(self):
+        '''
+        Main.__init__ unittest: Check if environment variable are added in section env
+        '''
+        os.environ["TEST"] = "myfakevalue"
+        m = Main()
+        self.assertTrue({'TEST': 'myfakevalue'}.items() <= m.data['env'].items())
+        del os.environ['TEST']
+
+    def test_init_env_var_by_method(self):
+        '''
+        Main.__init__ unittest: Check if environment variable are availabel with the environ method
+        '''
+        os.environ["TEST"] = "myfakevalue"
+        with open("test.txt.j2", 'w') as out:
+            out.write("{{ environ('TEST') }}")
+            out.flush()
+        
+        m = Main()
+        m.renderFile("test.txt.j2")
+
+        self.assertTrue({'TEST': 'myfakevalue'}.items() <= m.data['env'].items())
+        del os.environ['TEST']
+        self.assertTrue(os.path.isfile("test.txt"), "Template file is renamed")
+        self.assertFalse(os.path.isfile("test.txt.j2"), "Original File is deleted")
+        with open("test.txt") as f:
+            result = f.read()
+        self.assertEqual(result, "myfakevalue", "envion method is managed")
+        os.remove("test.txt")
+
     def test_addVariables_oneVariable(self):
         '''
         Main.addVariables unittest: Check if one variable can be added
         '''
         m = Main()
         m.addVariables("TEST=toto")
-        self.assertTrue(m.data == {'TEST': 'toto'})
+        self.assertTrue({'TEST': 'toto'}.items() <= m.data.items())
 
     def test_addVariables_multipleVariable(self):
         '''
@@ -31,7 +61,7 @@ class TestMain(unittest.TestCase):
             TEST1=tata
             TEST2=titi
         """)
-        self.assertTrue(m.data == {'TEST1': 'tata', 'TEST2': 'titi'})
+        self.assertTrue({'TEST1': 'tata', 'TEST2': 'titi'}.items() <= m.data.items())
 
     def test_addJsonSection_stringValue(self):
         '''
@@ -39,7 +69,7 @@ class TestMain(unittest.TestCase):
         '''
         m = Main()
         m.addJsonSection("my_test_section", "{\"TEST1\": \"tata\", \"TEST2\": \"titi\", \"problematic-key\": \"value\"}")
-        self.assertTrue(m.data == {'my_test_section': {'TEST1': 'tata', 'TEST2': 'titi', 'problematic_key': 'value' }})
+        self.assertTrue({'my_test_section': {'TEST1': 'tata', 'TEST2': 'titi', 'problematic_key': 'value' }}.items() <= m.data.items())
 
     def test_addJsonSection_dictValue(self):
         '''
@@ -47,7 +77,7 @@ class TestMain(unittest.TestCase):
         '''
         m = Main()
         m.addJsonSection("my_test_section", {'TEST1': 'tata', 'TEST2': 'titi', 'problematic-key': 'value'})
-        self.assertTrue(m.data == {'my_test_section': {'TEST1': 'tata', 'TEST2': 'titi', 'problematic_key': 'value'}})
+        self.assertTrue({'my_test_section': {'TEST1': 'tata', 'TEST2': 'titi', 'problematic_key': 'value'}}.items() <= m.data.items())
 
     def test_renderFile_jinja2(self):
         '''
