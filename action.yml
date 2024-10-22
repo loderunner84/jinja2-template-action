@@ -4,16 +4,53 @@ author: 'fletort'
 branding:
   icon: 'sliders'
   color: 'red'
-# inputs:
-#   templates_mask:
-#     description:
-#       'Mask Used to detect templates files'
-#     default: '*.j2'
+inputs:
+  variables:
+    description:
+      'Key, value pairs in .env file format (key=value)'
+    required: false
+    default: ''
+  keep_template:
+    description:
+      'Put to `true` to keep original template file.'
+    default: false
+  data_file:
+    description:
+      'Source file contening inputs variable for the jinja template.'
+    default: ''
+  data_format:
+    description:
+      'Format of the `data_file`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detction is based on the extension then on the content.'
+    default: automatic
 runs:
   using: 'composite'
   steps:
     - name: "Manage Dynamic Template"
       shell: bash
       run: |
-        pip install jinja2-cli
-        find . -name '*.j2' -exec ${{github.action_path}}/process_file.sh {} \;
+        # Need to export multiline variables input and context to pass it to python script
+        mkdir ${{ runner.temp }}/build_logs
+        echo '${{ inputs.variables }}' > ${{ runner.temp }}/build_logs/inputs_variables.env
+        echo '${{ toJson(github) }}' > ${{ runner.temp }}/build_logs/github.json
+        echo '${{ toJson(job) }}' > ${{ runner.temp }}/build_logs/job.json
+        echo '${{ toJson(runner) }}' > ${{ runner.temp }}/build_logs/runner.json
+        echo '${{ toJson(strategy) }}' > ${{ runner.temp }}/build_logs/strategy.json
+        echo '${{ toJson(matrix) }}' > ${{ runner.temp }}/build_logs/matrix.json
+        pip install -r ${{github.action_path}}/requirements.txt
+        keep_template=""
+        if [[ "${{inputs.keep_template}}" == "true" ]]; then keep_template="--keep_template"; fi
+        data_file=""
+        data_format=""
+        if [[ ! -z "${{inputs.data_file}}" ]];then 
+          data_file="--data_file=${{inputs.data_file}}"
+          if [[ "${{inputs.data_format}}" != "automatic" ]]; then
+            data_format="--data_format=${{inputs.data_format}}"
+          fi
+        fi
+        python3 ${{github.action_path}}/entrypoint.py ${keep_template} ${data_file} ${data_format} \
+          --var_file ${{ runner.temp }}/build_logs/inputs_variables.env \
+          --context ${{ runner.temp }}/build_logs/github.json \
+          --context ${{ runner.temp }}/build_logs/job.json \
+          --context ${{ runner.temp }}/build_logs/runner.json \
+          --context ${{ runner.temp }}/build_logs/strategy.json \
+          --context ${{ runner.temp }}/build_logs/matrix.json
