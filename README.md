@@ -50,6 +50,67 @@ Or as other contextual github information:
       TEST2=isfunny
 ```
 
+### Using Data Files
+
+```yaml
+- uses: fletort/jinja2-template-action@v1
+  with:
+    data_file: my_data.json
+    data_format: json # can be detected automatically (see below)
+```
+
+Possible data type are: env, yaml, json, ini
+
+#### 1. env file
+
+```file
+EXEMPLE_SMART=yoyo
+EXEMPLE_MY_VAR=True
+```
+
+#### 2. ini
+
+```file
+[EXEMPLE]
+SMART=yoyo
+MY_VAR=True
+```
+
+#### 3. yaml
+
+```file
+---
+EXEMPLE:
+  SMART=yoyo
+  MY_VAR=True
+```
+
+#### 4. json
+
+```file
+{
+  "EXEMPLE": {
+    "SMART": "yoyo",
+    "MY_VAR": True
+  }
+}
+```
+
+#### Related Jinja Template
+
+For previous INI, YAML, JSON examples, jinja template will be:
+```
+{{ EXEMPLE.SMART }}
+{{ EXEMPLE.MY_VAR }}
+```
+
+For previous ENV example, jinja template will be:
+```
+{{ EXEMPLE_SMART }}
+{{ EXEMPLE_MY_VAR }}
+```
+
+
 ### Using Workflow Github contextual Information
 
 Some of the [contextual information about workflow runs](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs)
@@ -83,6 +144,9 @@ Note: All strategy information key contains dashes that must me marked as unders
 | ---- | ----------- | ------- |
 | `variables` | Variable to substitute in the jinja templates. Must be Key, value pairs in .env file format (key=value). | "" |
 | `keep_template` | Put to `true` to keep original template file. | `false` |
+| `data_file` | Source file contening inputs variable for the jinja template. | "" |
+| `data_format` | Format of the `data_file`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detction is based on the extension then on the content. | `automatic` |
+
 
 
 ## Code Quality

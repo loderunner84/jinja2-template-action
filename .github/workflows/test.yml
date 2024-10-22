@@ -108,6 +108,8 @@ jobs:
     env: 
       VAR_TEST1_VALUE: mytest
       VAR_TEST2_VALUE: isfunny
+      FILE_KEY_1_VALUE: myfile
+      FILE_KEY_2_VALUE: isused
       TEST: integ
 
     steps:
@@ -121,6 +123,10 @@ jobs:
 
       - name: Prepare Test File
         run: |
+          echo "exemple:" > test-data.yml
+          echo "    FILE_KEY_1: ${{ env.FILE_KEY_1_VALUE }}" >> test-data.yml
+          echo "    FILE_KEY_2: ${{ env.FILE_KEY_2_VALUE }}" >> test-data.yml
+
           echo "{{ github.repository }}" > all_test.j2
           echo "${{ github.repository }}" > expected
           echo "{{ github.repository_owner }}" >> all_test.j2
@@ -143,6 +149,10 @@ jobs:
           echo "${{ env.VAR_TEST2_VALUE }}" >> expected
           echo "{{ env.TEST }}" >> all_test.j2
           echo "${{ env.TEST }}" >> expected
+          echo "{{ exemple.FILE_KEY_1 }}" >> all_test.j2
+          echo "${{ env.FILE_KEY_1_VALUE }}" >> expected
+          echo "{{ exemple.FILE_KEY_2 }}" >> all_test.j2
+          echo "${{ env.FILE_KEY_2_VALUE }}" >> expected
 
           echo "" >> all_test.j2
           cat all_test.j2
@@ -153,6 +163,8 @@ jobs:
         uses: ./   
         with:
           #keep_template: true
+          data_file: test-data.yml
+          data_format: yaml
           variables: |
             TEST1=${{ env.VAR_TEST1_VALUE }}
             TEST2=${{ env.VAR_TEST2_VALUE }}

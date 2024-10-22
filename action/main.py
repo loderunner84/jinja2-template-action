@@ -1,6 +1,7 @@
 import os
 import json
 from jinja2 import Template, Environment, FileSystemLoader
+from .parser import Parser
 
 class Main:
     def __init__(self, extensions=('.j2'), basepath='./', keep_template=False):
@@ -45,6 +46,11 @@ class Main:
             data[new_key] = data.pop(problematic_key)
         
         self.data[sectionName] = data
+
+    def addDataFile(self, file_path, file_format=None):
+        parser = Parser(file_path, file_format)
+        content = parser.parse()
+        self.data.update(content)
     
     def renderFile(self, filePath):
         with open(f"{filePath}".rsplit(".", 1)[0], 'w') as out:
@@ -58,6 +64,5 @@ class Main:
             for name in files:
                 if name.endswith(self.ext):
                     self.renderFile(f"{path}/{name}")
-
 
 

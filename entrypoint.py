@@ -8,7 +8,9 @@ from action.main import Main
 @click.option('--keep_template', is_flag=True)
 @click.option('--var_file', default=None)
 @click.option('--context', multiple=True, default=[])
-def main(keep_template, var_file, context):
+@click.option('--data_file', default=None)
+@click.option('--data_format', default=None)
+def main(keep_template, var_file, context, data_file, data_format):
     main = Main(keep_template=keep_template)
     
     if var_file:
@@ -21,6 +23,9 @@ def main(keep_template, var_file, context):
         with open(context_file) as f:
             content = f.read()
         main.addJsonSection(section, content)
+
+    if data_file:
+        main.addDataFile(data_file, data_format)
     
     main.renderAll()
 
