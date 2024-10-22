@@ -2,7 +2,6 @@ import unittest
 import os
 from unittest.mock import patch, call
 from unittest.mock import MagicMock
-from parameterized import parameterized
 from click.testing import CliRunner
 from entrypoint import main
 from action.main import Main
@@ -119,3 +118,59 @@ class TestEntrypoint(unittest.TestCase):
         # Clean
         os.remove("my_context1.txt")
         os.remove("my_context2.txt")
+
+    @patch('entrypoint.Main', spec=True)
+    def test_main_data_file_no_format(self, MainClassMock):
+        '''
+        entrypoint.main unittest: If data_file parameter is defined, addDataFile method is called with the file path.
+        '''
+        # Get the mock instance for MainClassMock
+        mock_instance = MainClassMock.return_value
+
+        # Call the Method (click)
+        runner = CliRunner()
+        result = runner.invoke(main, [f"--data_file=my_file.json"])
+
+        mock_instance.addJsonSection.addDataFile("my_file.json", None)
+        self.assertTrue(mock_instance.renderAll.called, "renderAll is called")
+
+        # Remove the previous env var
+        mock_instance.addJsonSection.reset_mock()
+
+        # Call the Method (click)
+        runner = CliRunner()
+        result = runner.invoke(main)
+
+        self.assertTrue(
+            call("my_file.json", None) not in mock_instance.addJsonSection.mock_calls,
+            f"addDataFile is not called for the previous context"
+        )
+        self.assertTrue(mock_instance.renderAll.called, "renderAll is called")
+
+    @patch('entrypoint.Main', spec=True)
+    def test_main_data_file_with_format(self, MainClassMock):
+        '''
+        entrypoint.main unittest: If data_file parameter and data_format are defined, addDataFile method is called with the file path and the format.
+        '''
+        # Get the mock instance for MainClassMock
+        mock_instance = MainClassMock.return_value
+
+        # Call the Method (click)
+        runner = CliRunner()
+        result = runner.invoke(main, [f"--data_file=my_file.json --data_format=my_format"])
+
+        mock_instance.addJsonSection.addDataFile("my_file.json", "my_format")
+        self.assertTrue(mock_instance.renderAll.called, "renderAll is called")
+
+        # Remove the previous env var
+        mock_instance.addJsonSection.reset_mock()
+
+        # Call the Method (click)
+        runner = CliRunner()
+        result = runner.invoke(main)
+
+        self.assertTrue(
+            call("my_file.json", "my_format") not in mock_instance.addJsonSection.mock_calls,
+            f"addDataFile is not called for the previous context"
+        )
+        self.assertTrue(mock_instance.renderAll.called, "renderAll is called")

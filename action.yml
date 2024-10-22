@@ -14,6 +14,14 @@ inputs:
     description:
       'Put to `true` to keep original template file.'
     default: false
+  data_file:
+    description:
+      'Source file contening inputs variable for the jinja template.'
+    default: ''
+  data_format:
+    description:
+      'Format of the `data_file`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detction is based on the extension then on the content.'
+    default: automatic
 runs:
   using: 'composite'
   steps:
@@ -31,7 +39,15 @@ runs:
         pip install -r ${{github.action_path}}/requirements.txt
         keep_template=""
         if [[ "${{inputs.keep_template}}" == "true" ]]; then keep_template="--keep_template"; fi
-        python3 ${{github.action_path}}/entrypoint.py ${keep_template} \
+        data_file=""
+        data_format=""
+        if [[ ! -z "${{inputs.data_file}}" ]];then 
+          data_file="--data_file=${{inputs.data_file}}"
+          if [[ "${{inputs.data_format}}" != "automatic" ]]; then
+            data_format="--data_format=${{inputs.data_format}}"
+          fi
+        fi
+        python3 ${{github.action_path}}/entrypoint.py ${keep_template} ${data_file} ${data_format} \
           --var_file ${{ runner.temp }}/build_logs/inputs_variables.env \
           --context ${{ runner.temp }}/build_logs/github.json \
           --context ${{ runner.temp }}/build_logs/job.json \

@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch, MagicMock
 from action.main import Main
 import shutil
 import os
@@ -78,6 +79,23 @@ class TestMain(unittest.TestCase):
         m = Main()
         m.addJsonSection("my_test_section", {'TEST1': 'tata', 'TEST2': 'titi', 'problematic-key': 'value'})
         self.assertTrue({'my_test_section': {'TEST1': 'tata', 'TEST2': 'titi', 'problematic_key': 'value'}}.items() <= m.data.items())
+
+    @patch('action.main.Parser', spec=True)
+    def test_addDataFile(self, ParserMock):
+        '''
+        Main.addDataFile unittest: Check that Parser class is inialized, used to parse then returned dict added to global data.
+        '''
+        # Get the mock instance for Parser
+        mock_instance = ParserMock.return_value
+        mock_instance.parse = MagicMock(return_value={'TEST': 'toto'})
+
+        m = Main()
+        m.addDataFile("file_path", "my_format")
+        print(ParserMock.mock_calls)
+
+        ParserMock.assert_called_with("file_path", "my_format")
+        self.assertTrue(mock_instance.parse.called, "parse is called")
+        self.assertTrue({'TEST': 'toto'}.items() <= m.data.items())
 
     def test_renderFile_jinja2(self):
         '''
