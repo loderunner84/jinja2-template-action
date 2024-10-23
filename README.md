@@ -3,7 +3,7 @@ Use Jinja2 template engine on multipe files as a GitHub action.
 
 [![Continuous Testing](https://github.com/fletort/jinja2-template-action/actions/workflows/test.yml/badge.svg)](https://github.com/fletort/jinja2-template-action/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/fletort/jinja2-template-action/badge.svg?branch=main)](https://coveralls.io/github/fletort/jinja2-template-action?branch=main)
-[![Testspace tests count](https://img.shields.io/testspace/total/fletort/fletort%3Ajinja2-template-action/main)](https://fletort.testspace.com/spaces/68162/current)
+[![Testspace tests count](https://img.shields.io/testspace/total/fletort/fletort%3Ajinja2-template-action/main)](https://fletort.testspace.com/projects/68162/spaces)
 
 This is a very simple version of the action, that is ok for my first need.
 Futur enhancement will come.
