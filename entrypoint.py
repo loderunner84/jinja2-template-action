@@ -22,7 +22,8 @@ def main(keep_template, var_file, context, data_file, data_format):
         section=Path(os.path.basename(context_file)).stem
         with open(context_file) as f:
             content = f.read()
-        main.addJsonSection(section, content)
+        if content != "" and content != "null\n":
+            main.addJsonSection(section, content)
 
     if data_file:
         main.addDataFile(data_file, data_format)

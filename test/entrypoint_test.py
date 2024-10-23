@@ -2,6 +2,7 @@ import unittest
 import os
 from unittest.mock import patch, call
 from unittest.mock import MagicMock
+from parameterized import parameterized
 from click.testing import CliRunner
 from entrypoint import main
 from action.main import Main
@@ -63,6 +64,7 @@ class TestEntrypoint(unittest.TestCase):
     @patch('entrypoint.Main', spec=True)
     def test_main_context_one(self, MainClassMock):
         '''
+        entrypoint.main unittest: If one context file is given addJsonSection method is called with its content for the context defiend by the name of the file.
         '''
         # Get the mock instance for MainClassMock
         mock_instance = MainClassMock.return_value
@@ -92,9 +94,39 @@ class TestEntrypoint(unittest.TestCase):
         )
         self.assertTrue(mock_instance.renderAll.called, "renderAll is called")
 
+    @parameterized.expand([
+        (""),
+        ("none\n")
+    ])
+    @patch('entrypoint.Main', spec=True)
+    def test_main_context_null(self, content, MainClassMock):
+        '''
+        entrypoint.main unittest: If context file content is empty or contains 'null\n', addJsonSection method is NOT called.
+        '''
+        # Get the mock instance for MainClassMock
+        mock_instance = MainClassMock.return_value
+        # Add Some Content in a context file
+        with open("my_context.txt", 'w') as out:
+            out.write(content)
+            out.flush()
+
+        # Call the Method (click)
+        runner = CliRunner()
+        result = runner.invoke(main, [f"--context=my_context.txt"])
+
+        self.assertTrue(
+            call("my_context", "test_content") not in mock_instance.addJsonSection.mock_calls,
+            f"addJsonSection is not called for the previous context"
+        )
+        self.assertTrue(mock_instance.renderAll.called, "renderAll is called")
+
+        # Remove the file
+        os.remove("my_context.txt")
+
     @patch('entrypoint.Main', spec=True)
     def test_main_context_multiple(self, MainClassMock):
         '''
+        entrypoint.main unittest: If multiple context file is given addJsonSection method is called with each file content for the each context defined by the name of each file.
         '''
         # Get the mock instance for MainClassMock
         mock_instance = MainClassMock.return_value
