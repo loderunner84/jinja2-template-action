@@ -27,15 +27,21 @@ runs:
   steps:
     - name: "Manage Dynamic Template"
       shell: bash
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+        JOB_CONTEXT: ${{ toJson(job) }}
+        RUNNER_CONTEXT: ${{ toJson(runner) }}
+        STRATEGY_CONTEXT: ${{ toJson(strategy) }}
+        MATRIX_CONTEXT: ${{ toJson(matrix) }}
       run: |
         # Need to export multiline variables input and context to pass it to python script
         mkdir ${{ runner.temp }}/build_logs
-        echo '${{ inputs.variables }}' > ${{ runner.temp }}/build_logs/inputs_variables.env
-        echo '${{ toJson(github) }}' > ${{ runner.temp }}/build_logs/github.json
-        echo '${{ toJson(job) }}' > ${{ runner.temp }}/build_logs/job.json
-        echo '${{ toJson(runner) }}' > ${{ runner.temp }}/build_logs/runner.json
-        echo '${{ toJson(strategy) }}' > ${{ runner.temp }}/build_logs/strategy.json
-        echo '${{ toJson(matrix) }}' > ${{ runner.temp }}/build_logs/matrix.json
+        echo "${{ inputs.variables }}" > ${{ runner.temp }}/build_logs/inputs_variables.env
+        echo "$GITHUB_CONTEXT" > ${{ runner.temp }}/build_logs/github.json
+        echo "$JOB_CONTEXT" > ${{ runner.temp }}/build_logs/job.json
+        echo "$RUNNER_CONTEXT" > ${{ runner.temp }}/build_logs/runner.json
+        echo "$STRATEGY_CONTEXT" > ${{ runner.temp }}/build_logs/strategy.json
+        echo "$MATRIX_CONTEXT" > ${{ runner.temp }}/build_logs/matrix.json
         pip install -r ${{github.action_path}}/requirements.txt
         keep_template=""
         if [[ "${{inputs.keep_template}}" == "true" ]]; then keep_template="--keep_template"; fi
