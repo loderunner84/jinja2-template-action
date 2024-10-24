@@ -96,8 +96,8 @@ jobs:
           files: report.xml
           check_name: 'Unit Test Results'
 
-  test-action:
-    name: GitHub Actions Test
+  test-action-matrix:
+    name: Test With Matrix
     runs-on: ubuntu-latest
     permissions:
       checks: write
@@ -184,7 +184,7 @@ jobs:
       - name: Testspace push test content
         if: always() && (steps.test-action-result.outcome == 'success')
         run: |
-          testspace "[Integ Tests]report.xml"
+          testspace "[Integ Tests/With Matrix]report.xml"
 
       - name: Publish Test Results in GitHub
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -193,6 +193,97 @@ jobs:
           files: report.xml
           check_name: 'Integ Test Results'
 
+  test-action-no-matrix:
+    name: Test Without Matrix
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+    env: 
+      VAR_TEST1_VALUE: mytest
+      VAR_TEST2_VALUE: isfunny
+      FILE_KEY_1_VALUE: myfile
+      FILE_KEY_2_VALUE: isused
+      TEST: integ
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Install bats
+        id: install-bats
+        run: ./test/install_bats.sh
+
+      - name: Prepare Test File
+        run: |
+          echo "exemple:" > test-data.yml
+          echo "    FILE_KEY_1: ${{ env.FILE_KEY_1_VALUE }}" >> test-data.yml
+          echo "    FILE_KEY_2: ${{ env.FILE_KEY_2_VALUE }}" >> test-data.yml
+
+          echo "{{ github.repository }}" > all_test.j2
+          echo "${{ github.repository }}" > expected
+          echo "{{ github.repository_owner }}" >> all_test.j2
+          echo "${{ github.repository_owner }}" >> expected
+          echo "{{ github.event.repository.license.key }}" >> all_test.j2
+          echo "${{ github.event.repository.license.key }}" >> expected
+          echo "{{ job.status }}" >> all_test.j2
+          echo "${{ job.status }}" >> expected
+          echo "{{ runner.os }}" >> all_test.j2
+          echo "${{ runner.os }}" >> expected
+          echo "{{ strategy.job_index }}" >> all_test.j2
+          echo "${{ strategy.job-index }}" >> expected
+          echo "{{ environ('TEST') }}" >> all_test.j2
+          echo "${{ env.TEST }}" >> expected
+          echo "{{ TEST1 }}" >> all_test.j2
+          echo "${{ env.VAR_TEST1_VALUE }}" >> expected
+          echo "{{ TEST2 }}" >> all_test.j2
+          echo "${{ env.VAR_TEST2_VALUE }}" >> expected
+          echo "{{ env.TEST }}" >> all_test.j2
+          echo "${{ env.TEST }}" >> expected
+          echo "{{ exemple.FILE_KEY_1 }}" >> all_test.j2
+          echo "${{ env.FILE_KEY_1_VALUE }}" >> expected
+          echo "{{ exemple.FILE_KEY_2 }}" >> all_test.j2
+          echo "${{ env.FILE_KEY_2_VALUE }}" >> expected
+
+          echo "" >> all_test.j2
+          cat all_test.j2
+          cat expected
+
+      - name: Test Local Action
+        id: test-action
+        uses: ./   
+        with:
+          #keep_template: true
+          data_file: test-data.yml
+          data_format: yaml
+          variables: |
+            TEST1=${{ env.VAR_TEST1_VALUE }}
+            TEST2=${{ env.VAR_TEST2_VALUE }}
+
+      - name: Check If Template file is managed
+        id: test-action-result
+        run: |
+          ./test/bats/bin/bats --report-formatter junit test/test_action.bats
+
+      - name: Testspace client install & config
+        id: testspace_init
+        if: always() && hashFiles('report.xml') != ''
+        uses: testspace-com/setup-testspace@v1
+        with:
+          domain: ${{github.repository_owner}}
+
+      - name: Testspace push test content
+        if: always() && (steps.test-action-result.outcome == 'success')
+        run: |
+          testspace "[Integ Tests/Without Matrix]report.xml"
+
+      - name: Publish Test Results in GitHub
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: report.xml
+          check_name: 'Integ Test Results'
 
 
 
