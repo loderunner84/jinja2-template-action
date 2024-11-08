@@ -10,7 +10,9 @@ from action.main import Main
 @click.option('--context', multiple=True, default=[])
 @click.option('--data_file', default=None)
 @click.option('--data_format', default=None)
-def main(keep_template, var_file, context, data_file, data_format):
+@click.option('--data_url', default=None)
+@click.option('--data_url_format', default=None)
+def main(keep_template, var_file, context, data_file, data_format, data_url, data_url_format):
     main = Main(keep_template=keep_template)
     
     if var_file:
@@ -27,6 +29,9 @@ def main(keep_template, var_file, context, data_file, data_format):
 
     if data_file:
         main.addDataFile(data_file, data_format)
+
+    if data_url:
+        main.addDataUrl(data_url, data_url_format)
     
     main.renderAll()
 
