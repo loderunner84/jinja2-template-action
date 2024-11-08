@@ -163,18 +163,18 @@ class TestEntrypoint(unittest.TestCase):
         runner = CliRunner()
         result = runner.invoke(main, [f"--data_file=my_file.json"])
 
-        mock_instance.addJsonSection.addDataFile("my_file.json", None)
+        mock_instance.addDataFile.assert_called_with("my_file.json", None)
         self.assertTrue(mock_instance.renderAll.called, "renderAll is called")
 
         # Remove the previous env var
-        mock_instance.addJsonSection.reset_mock()
+        mock_instance.addDataFile.reset_mock()
 
         # Call the Method (click)
         runner = CliRunner()
         result = runner.invoke(main)
 
         self.assertTrue(
-            call("my_file.json", None) not in mock_instance.addJsonSection.mock_calls,
+            call("my_file.json", None) not in mock_instance.addDataFile.mock_calls,
             f"addDataFile is not called for the previous context"
         )
         self.assertTrue(mock_instance.renderAll.called, "renderAll is called")
@@ -189,20 +189,76 @@ class TestEntrypoint(unittest.TestCase):
 
         # Call the Method (click)
         runner = CliRunner()
-        result = runner.invoke(main, [f"--data_file=my_file.json --data_format=my_format"])
+        result = runner.invoke(main, [f"--data_file=my_file.json", "--data_format=my_format"])
 
-        mock_instance.addJsonSection.addDataFile("my_file.json", "my_format")
+        mock_instance.addDataFile.assert_called_with("my_file.json", "my_format")
         self.assertTrue(mock_instance.renderAll.called, "renderAll is called")
 
         # Remove the previous env var
-        mock_instance.addJsonSection.reset_mock()
+        mock_instance.addDataFile.reset_mock()
 
         # Call the Method (click)
         runner = CliRunner()
         result = runner.invoke(main)
 
         self.assertTrue(
-            call("my_file.json", "my_format") not in mock_instance.addJsonSection.mock_calls,
+            call("my_file.json", "my_format") not in mock_instance.addDataFile.mock_calls,
+            f"addDataFile is not called for the previous context"
+        )
+        self.assertTrue(mock_instance.renderAll.called, "renderAll is called")
+
+    @patch('entrypoint.Main', spec=True)
+    def test_main_url_file_no_format(self, MainClassMock):
+        '''
+        entrypoint.main unittest: If data_url parameter is defined, addDataUrl method is called with the url.
+        '''
+        # Get the mock instance for MainClassMock
+        mock_instance = MainClassMock.return_value
+
+        # Call the Method (click)
+        runner = CliRunner()
+        result = runner.invoke(main, [f"--data_url=my_url"])
+
+        mock_instance.addDataUrl.assert_called_with("my_url", None)
+        self.assertTrue(mock_instance.renderAll.called, "renderAll is called")
+
+        # Remove the previous env var
+        mock_instance.addDataUrl.reset_mock()
+
+        # Call the Method (click)
+        runner = CliRunner()
+        result = runner.invoke(main)
+
+        self.assertTrue(
+            call("my_url", None) not in mock_instance.addDataUrl.mock_calls,
+            f"addDataUrl is not called for the previous context"
+        )
+        self.assertTrue(mock_instance.renderAll.called, "renderAll is called")
+
+    @patch('entrypoint.Main', spec=True)
+    def test_main_urlfile_with_format(self, MainClassMock):
+        '''
+        entrypoint.main unittest: If data_url parameter and data_url_format are defined, addDataUrl method is called with the url and the format.
+        '''
+        # Get the mock instance for MainClassMock
+        mock_instance = MainClassMock.return_value
+
+        # Call the Method (click)
+        runner = CliRunner()
+        result = runner.invoke(main, [f"--data_url=my_url", "--data_url_format=my_format"])
+
+        mock_instance.addDataUrl.assert_called_with("my_url", "my_format")
+        self.assertTrue(mock_instance.renderAll.called, "renderAll is called")
+
+        # Remove the previous env var
+        mock_instance.addDataUrl.reset_mock()
+
+        # Call the Method (click)
+        runner = CliRunner()
+        result = runner.invoke(main)
+
+        self.assertTrue(
+            call("my_url", "my_format") not in mock_instance.addDataUrl.mock_calls,
             f"addDataFile is not called for the previous context"
         )
         self.assertTrue(mock_instance.renderAll.called, "renderAll is called")

@@ -145,9 +145,9 @@ Note: All strategy information key contains dashes that must me marked as unders
 | `variables` | Variable to substitute in the jinja templates. Must be Key, value pairs in .env file format (key=value). | "" |
 | `keep_template` | Put to `true` to keep original template file. | `false` |
 | `data_file` | Source file contening inputs variable for the jinja template. | "" |
-| `data_format` | Format of the `data_file`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detction is based on the extension then on the content. | `automatic` |
-
-
+| `data_format` | Format of the `data_file`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detection is based on the extension then on the content. | `automatic` |
+| `data_url` | URL Link contening inputs variable for the jinja template. | "" |
+| `data_url_format` | Format of the `data_url`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detection is based on the http header content-type then on the content itself. | `automatic` |
 
 ## Code Quality
 

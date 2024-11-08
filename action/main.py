@@ -1,7 +1,7 @@
 import os
 import json
 from jinja2 import Template, Environment, FileSystemLoader
-from .parser import FileParser
+from .parser import FileParser, UrlParser
 
 class Main:
     def __init__(self, extensions=('.j2'), basepath='./', keep_template=False):
@@ -53,7 +53,9 @@ class Main:
         self.data.update(content)
 
     def addDataUrl(self, url, data_format=None): 
-        pass
+        parser = UrlParser(url, data_format)
+        content = parser.parse()
+        self.data.update(content)
     
     def renderFile(self, filePath):
         with open(f"{filePath}".rsplit(".", 1)[0], 'w') as out:

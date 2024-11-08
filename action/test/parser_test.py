@@ -1,7 +1,7 @@
 import os
 import unittest
 from parameterized import parameterized
-from action.parser import FileParser, Parser
+from action.parser import FileParser, Parser, UrlParser
 
 class TestParser(unittest.TestCase):
     
@@ -181,7 +181,7 @@ class TestFileParser(unittest.TestCase):
     ])
     def test_init_with_managed_format(self, format):
         '''
-        Parser.__init__ unittest: Init with managed file format stores the file path and is successfull.
+        FileParser.__init__ unittest: Init with managed file format stores the file path and is successfull.
         File format: : ini, json, yaml, yml, env.
         '''
         p = FileParser("file_path", format)
@@ -190,7 +190,7 @@ class TestFileParser(unittest.TestCase):
 
     def test_init_with_unmanaged_format(self):
         '''
-        Parser.__init__ unittest: Parse with defined unmanaged file format raise exception.
+        FileParser.__init__ unittest: Init with defined unmanaged file format raise exception.
         '''
         with self.assertRaises(ValueError):
             p = FileParser("file_path", "strange_format")
@@ -218,7 +218,7 @@ class TestFileParser(unittest.TestCase):
     ])
     def test_load_with_format_found_in_extension(self, extension):
         '''
-        Parser.load unittest: Load file wihout predefined format but with a managed extension, return the file content and found the format from extension.
+        FileParser.load unittest: Load file wihout predefined format but with a managed extension, return the file content and found the format from extension.
         Possible extension: : ini, json, yaml, yml, env.
         '''
         with open(f"file_path.{extension}", 'w') as file:
@@ -231,4 +231,72 @@ class TestFileParser(unittest.TestCase):
 
         os.remove(f"file_path.{extension}")
 
+
+class TestUrlParser(unittest.TestCase):
+
+    @parameterized.expand([
+        ('ini'),
+        ('json'),
+        ('yaml'),
+        ('yml'),
+        ('env')
+    ])
+    def test_init_with_managed_format(self, format):
+        '''
+        UrlParser.__init__ unittest: Init with managed file format stores the url and is successfull.
+        File format: : ini, json, yaml, yml, env.
+        '''
+        p = UrlParser("url", format)
+        self.assertEqual(p.url, "url", "Init store url without any check")
+        self.assertTrue(p.format == format, "init stores correct format")
+
+    def test_init_with_unmanaged_format(self):
+        '''
+        UrlParser.__init__ unittest: Init with defined unmanaged format raise exception.
+        '''
+        with self.assertRaises(ValueError):
+            p = UrlParser("url", "strange_format")
+
+    @unittest.mock.patch('urllib.request.urlopen')
+    def test_load_with_predefinedformat(self, mock_urlopen):
+        '''
+        UrlParser.load unittest: Load file wih a predefined format, return the file content and keep the format.
+        '''
+        cm = unittest.mock.MagicMock()
+        cm.read.return_value = 'CONTENT_TO_PARSE'
+        cm.__enter__.return_value = cm
+        mock_urlopen.return_value = cm
+ 
+
+        p = UrlParser("url", "json")
+        ret = p.load()
+        self.assertEqual(ret, "CONTENT_TO_PARSE", "Load return the file content")
+        self.assertEqual(p.format, "json", "Load keeps the predefined format whatever the content")
+        cm.getheader.assert_called_with('content-type')
+
+    @parameterized.expand([
+        ('application/json', 'json'),
+        ('text/json', 'json'),
+        ('application/yaml', 'yaml'),
+        ('application/x-yaml', 'yaml'),
+        ('text/x-yaml', 'yaml'),
+        ('text/yaml', 'yaml')
+    ])
+    @unittest.mock.patch('urllib.request.urlopen')
+    def test_load_with_format_found_in_extension(self, content_type, waited_format, mock_urlopen):
+        '''
+        UrlParser.load unittest: Load content wihout predefined format but with a managed http return, return the url content and found the format from http header content-type.
+        Possible content_type: : ini, json, yaml, yml, env.
+        '''
+        cm = unittest.mock.MagicMock()
+        cm.getheader.return_value = content_type
+        cm.read.return_value = 'CONTENT_TO_PARSE'
+        cm.__enter__.return_value = cm
+        mock_urlopen.return_value = cm
+
+        p = UrlParser("url")
+        ret = p.load()
+        self.assertEqual(ret, "CONTENT_TO_PARSE", "Load return the file content")
+        cm.getheader.assert_called_with('content-type')
+        self.assertEqual(p.format, waited_format, "Load found the format from the http header")
 

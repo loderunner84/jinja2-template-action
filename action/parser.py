@@ -85,6 +85,29 @@ class Parser(ABC):
         'env': '_parse_env'
     }
 
+class UrlParser(Parser):
+    def __init__(self, url, waited_format=None):
+        self.url = url
+        super().__init__(waited_format)
+    
+    def load(self):
+        with urllib.request.urlopen(self.url) as remote_content:
+            self.content = remote_content.read()
+            content_type = remote_content.getheader('content-type')
+            if (self.format == None) and (content_type in UrlParser.CONTENT_TYPE.keys()):
+                self.format = UrlParser.CONTENT_TYPE[content_type]
+            return self.content
+
+    CONTENT_TYPE = {
+        'application/json': 'json',
+        'text/json': 'json',
+        'application/yaml': 'yaml',
+        'application/x-yaml': 'yaml',
+        'text/x-yaml': 'yaml',
+        'text/yaml': 'yaml'
+    }    
+            
+
 class FileParser(Parser):
 
     def __init__(self, file_path, file_format=None):       
@@ -105,3 +128,4 @@ class FileParser(Parser):
         if extension in FileParser.FORMATS.keys():
             return extension
         return None
+

@@ -22,6 +22,14 @@ inputs:
     description:
       'Format of the `data_file`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detction is based on the extension then on the content.'
     default: automatic
+  data_url:
+    description:
+      'Link to a file contening inputs variable for the jinja template.'
+    default: ''
+  data_url_format:
+    description:
+      'Format of the `url_file`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detction is based on the content-type http header then on the content.'
+    default: automatic
 runs:
   using: 'composite'
   steps:
@@ -53,7 +61,17 @@ runs:
             data_format="--data_format=${{inputs.data_format}}"
           fi
         fi
-        python3 ${{github.action_path}}/entrypoint.py ${keep_template} ${data_file} ${data_format} \
+        data_url=""
+        data_url_format=""
+        if [[ ! -z "${{inputs.data_url}}" ]];then 
+          data_url="--data_url=${{inputs.data_url}}"
+          if [[ "${{inputs.data_url_format}}" != "automatic" ]]; then
+            data_url_format="--data_url_format=${{inputs.data_url_format}}"
+          fi
+        fi
+        python3 ${{github.action_path}}/entrypoint.py ${keep_template} \
+          ${data_file} ${data_format} \
+          ${data_url} ${data_url_format} \
           --var_file ${{ runner.temp }}/build_logs/inputs_variables.env \
           --context ${{ runner.temp }}/build_logs/github.json \
           --context ${{ runner.temp }}/build_logs/job.json \
