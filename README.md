@@ -1,23 +1,27 @@
 # jinja2-template-action
-Use Jinja2 template engine on multipe files as a GitHub action.
+
+Use Jinja2 template engine on multipe files as a GitHub Action.
 
 [![Continuous Testing](https://github.com/fletort/jinja2-template-action/actions/workflows/test.yml/badge.svg)](https://github.com/fletort/jinja2-template-action/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/fletort/jinja2-template-action/badge.svg?branch=main)](https://coveralls.io/github/fletort/jinja2-template-action?branch=main)
 [![Testspace tests count](https://img.shields.io/testspace/total/fletort/fletort%3Ajinja2-template-action/main)](https://fletort.testspace.com/projects/68162/spaces)
 
-This is a very simple version of the action, that is ok for my first need.
+This is a very simple version of the action, that is OK for my first need.
 Futur enhancement will come.
 
-The actual "simple" version transform all local j2 files (recursively) ('*.j2')
+The actual "simple" version transform all local j2 files (recursively) ('\*.j2')
 with the jinja2 library.
 
-The new file name is the same filename without the j2 extension.
+The new filename is the same filename without the j2 extension.
 For exemple, `README.md.j2` becomes `README.md`.
 
-It this version, it can only be used with environment variable, see my [test template file](./test/template.j2).
+It this version, it can only be used with environment variable,
+see my [test template file](./test/template.j2).
 
-Environement variable as used as with the jinja2 cli, with a _kind_ of `environ` method :
-```
+Environement variable as used as with the jinja2 cli,
+with a _kind_ of `environ` method :
+
+```file
 {{ environ('TEST') }}
 ```
 
@@ -32,11 +36,14 @@ Environement variable as used as with the jinja2 cli, with a _kind_ of `environ`
 ```
 
 Environment variables are used as with jinja2 cli:
-```
+
+```file
 {{ environ('TEST') }}
 ```
-Or as other contextual github information:
-```
+
+Or as other contextual GitHub information:
+
+```file
 {{ env.TEST }}
 ```
 
@@ -59,7 +66,7 @@ Or as other contextual github information:
     data_format: json # can be detected automatically (see below)
 ```
 
-Possible data type are: env, yaml, json, ini
+Possible data type are: `env`, `yaml`, `json`, `ini`
 
 #### 1. env file
 
@@ -76,7 +83,7 @@ SMART=yoyo
 MY_VAR=True
 ```
 
-#### 3. yaml
+#### 3. YAML
 
 ```file
 ---
@@ -99,34 +106,35 @@ EXEMPLE:
 #### Related Jinja Template
 
 For previous INI, YAML, JSON examples, jinja template will be:
-```
+
+```file
 {{ EXEMPLE.SMART }}
 {{ EXEMPLE.MY_VAR }}
 ```
 
 For previous ENV example, jinja template will be:
-```
+
+```file
 {{ EXEMPLE_SMART }}
 {{ EXEMPLE_MY_VAR }}
 ```
 
-
-### Using Workflow Github contextual Information
+### Using Workflow GitHub contextual Information
 
 Some of the [contextual information about workflow runs](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs)
 are available inside your jinja Template:
 
-- github
-- job
-- runner
-- strategy
-- matrix
+- `github`
+- `job`
+- `runner`
+- `strategy`
+- `matrix`
 
 As part of an expression, you can access context information using one of two syntaxes.
 Index syntax: `github['sha']`
 Property dereference syntax: `github.sha`
 
-```
+```file
 {{ github.repository }}
 {{ job.status }}
 {{ runner.os }}
@@ -134,12 +142,13 @@ Property dereference syntax: `github.sha`
 {{ matrix.your_matrix_variable_name }}
 ```
 
-Note: All strategy information key contains dashes that must me marked as underscore in jinja expression: `${{ strategy.job-index }}` becomes `{{ strategy.job_index }}`.
-
+Note: All strategy information key contains dashes that must me marked as
+underscore in jinja expression: `${{ strategy.job-index }}` becomes
+`{{ strategy.job_index }}`.
 
 ### Actions inputs
 
-
+<!-- prettier-ignore-start -->
 | Name | Description | Default |
 | ---- | ----------- | ------- |
 | `variables` | Variable to substitute in the jinja templates. Must be Key, value pairs in .env file format (key=value). | "" |
@@ -148,6 +157,7 @@ Note: All strategy information key contains dashes that must me marked as unders
 | `data_format` | Format of the `data_file`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detection is based on the extension then on the content. | `automatic` |
 | `data_url` | URL Link contening inputs variable for the jinja template. | "" |
 | `data_url_format` | Format of the `data_url`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detection is based on the http header content-type then on the content itself. | `automatic` |
+<!-- prettier-ignore-end -->
 
 ## Code Quality
 
