@@ -6,24 +6,22 @@ Use Jinja2 template engine on multipe files as a GitHub Action.
 [![Coverage Status](https://coveralls.io/repos/github/fletort/jinja2-template-action/badge.svg?branch=main)](https://coveralls.io/github/fletort/jinja2-template-action?branch=main)
 [![Testspace tests count](https://img.shields.io/testspace/total/fletort/fletort%3Ajinja2-template-action/main)](https://fletort.testspace.com/projects/68162/spaces)
 
-This is a very simple version of the action, that is OK for my first need.
-Futur enhancement will come.
+## Behaviour
 
-The actual "simple" version transform all local j2 files (recursively) ('\*.j2')
+This action transfrom all local j2 files (recursively) ('\*.j2')
 with the jinja2 library.
 
-The new filename is the same filename without the j2 extension.
-For exemple, `README.md.j2` becomes `README.md`.
-
-It this version, it can only be used with environment variable,
-see my [test template file](./test/template.j2).
-
-Environement variable as used as with the jinja2 cli,
-with a _kind_ of `environ` method :
-
-```file
-{{ environ('TEST') }}
-```
+- All the detect template will be resolve and named without the j2 extension.
+  For exemple, `README.md.j2` becomes `README.md`.
+- Original template file can be keep or not (not keeped by default)
+- All gihub contextes are available inside template (`github`, `job`,
+  `runner`, `strategy`, `matrix`)
+- It is possible to give more input variables to the jinja2 engine in
+  multiple way:
+  - From environement variables,
+  - From variable given in input,
+  - From local data files in multipe possible format (`env`, `yaml`, `json`, `ini`)
+  - From URL source in multipe possible format (`env`, `yaml`, `json`, `ini`)
 
 ## Usage
 
