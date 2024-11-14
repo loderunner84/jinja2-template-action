@@ -1,37 +1,31 @@
-name: 'Jinja2 Engine Repo'
-description: 'Use the Jinja2 templating engine on multiple files'
-author: 'fletort'
+name: "Jinja2 Engine Repo"
+description: "Use the Jinja2 templating engine on multiple files"
+author: "fletort"
 branding:
-  icon: 'sliders'
-  color: 'red'
+  icon: "sliders"
+  color: "red"
 inputs:
   variables:
-    description:
-      'Key, value pairs in .env file format (key=value)'
+    description: "Key, value pairs in .env file format (key=value)"
     required: false
-    default: ''
+    default: ""
   keep_template:
-    description:
-      'Put to `true` to keep original template file.'
+    description: "Put to `true` to keep original template file."
     default: false
   data_file:
-    description:
-      'Source file contening inputs variable for the jinja template.'
-    default: ''
+    description: "Source file contening inputs variable for the jinja template."
+    default: ""
   data_format:
-    description:
-      'Format of the `data_file`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detction is based on the extension then on the content.'
+    description: "Format of the `data_file`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detction is based on the extension then on the content."
     default: automatic
   data_url:
-    description:
-      'Link to a file contening inputs variable for the jinja template.'
-    default: ''
+    description: "Link to a file contening inputs variable for the jinja template."
+    default: ""
   data_url_format:
-    description:
-      'Format of the `url_file`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detction is based on the content-type http header then on the content.'
+    description: "Format of the `url_file`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detction is based on the content-type http header then on the content."
     default: automatic
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: "Manage Dynamic Template"
       shell: bash
