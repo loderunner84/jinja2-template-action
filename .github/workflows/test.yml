@@ -246,6 +246,9 @@ jobs:
           echo "${{ runner.os }}" >> expected
           echo "{{ strategy.job_index }}" >> all_test.j2
           echo "${{ strategy.job-index }}" >> expected
+          echo "{{ matrix.test }}" >> all_test.j2
+          # Test ChainableUndefined
+          echo "" >> expected
           echo "{{ environ('TEST') }}" >> all_test.j2
           echo "${{ env.TEST }}" >> expected
           echo "{{ TEST1 }}" >> all_test.j2
@@ -268,6 +271,7 @@ jobs:
         uses: ./
         with:
           #keep_template: true
+          undefined_behaviour: ChainableUndefined # Use to test if undefined_behaviour is managed by the action
           data_file: test-data.yml
           data_format: yaml
           variables: |

@@ -6,6 +6,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import jinja2
+
 from action.main import Main
 
 
@@ -48,6 +50,22 @@ class TestMain(unittest.TestCase):
             result = f.read()
         self.assertEqual(result, "myfakevalue", "envion method is managed")
         os.remove("test.txt")
+
+    def test_init_undefined_behaviour_ok(self):
+        """
+        Main.__init__ unittest: Check if all jinja2 undefined behavior are managed
+        """
+        Main(undefined="Undefined")
+        Main(undefined="ChainableUndefined")
+        Main(undefined="DebugUndefined")
+        Main(undefined="StrictUndefined")
+
+    def test_init_undefined_behaviour_unknow(self):
+        """
+        Main.__init__ unittest: Check if an unknow jinja2 undefined behavior is in error
+        """
+        with self.assertRaises(ValueError):
+            Main(undefined="Joke")
 
     def test_add_variables_one_variable(self):
         """
@@ -178,6 +196,30 @@ class TestMain(unittest.TestCase):
         self.assertTrue(os.path.isfile("test.txt.j2"), "Original File is NOT deleted")
         os.remove("test.txt")
         os.remove("test.txt.j2")
+
+    def test_render_file_undefined_behaviour(self):
+        """
+        Main.renderFile unittest: Check if undefined behaviour can be defined
+        """
+        with open("test.txt.j2", "w", encoding="utf-8") as out:
+            out.write("{{ TEST1 }}\n{{ TEST2.f }}\n\n")
+            out.flush()
+        data = {"TEST1": "tata"}
+
+        m1 = Main()
+        m1.data = data
+        with self.assertRaises(jinja2.exceptions.UndefinedError):
+            m1.render_file("test.txt.j2")
+
+        m2 = Main(undefined="ChainableUndefined")
+        m2.data = data
+        m2.render_file("test.txt.j2")
+        with open("test.txt", encoding="utf-8") as f:
+            result = f.read()
+        self.assertEqual(
+            result, "tata\n\n", "ChainableUndefined behavior was taken in account"
+        )
+        os.remove("test.txt")
 
     def test_render_all(self):
         """

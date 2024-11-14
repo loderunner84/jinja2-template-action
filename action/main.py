@@ -1,5 +1,6 @@
 """Main file of the jinja2-template-action action."""
 
+import importlib
 import json
 import os
 
@@ -11,17 +12,44 @@ from .parser import FileParser, UrlParser
 class Main:
     """Main class of the jinja2-template-action"""
 
-    def __init__(self, extensions=(".j2"), basepath="./", keep_template=False):
+    def __init__(
+        self,
+        extensions=(".j2"),
+        basepath="./",
+        keep_template=False,
+        undefined="Undefined",
+    ):
         self.ext = extensions
         self.basepath = basepath
         self.keep_template = keep_template
-        self.env = Environment(loader=FileSystemLoader(self.basepath))
+        if undefined not in self.BEHAVIOURS:
+            raise ValueError(f"Specified Undefined Behavior is unknow: {undefined}")
+        undefined_class = Main.class_for_name("jinja2", undefined)
+        self.env = Environment(
+            loader=FileSystemLoader(self.basepath), undefined=undefined_class
+        )
         self.data = {}
         # Keep the environ method in template as whe have in the
         # jinja2 cli in the first version of this action
         self.env.globals["environ"] = os.environ.get
         # Also add env variable in a classic way env.VAR_NAME
         self.data["env"] = dict(os.environ)
+
+    BEHAVIOURS = [
+        "Undefined",
+        "ChainableUndefined",
+        "DebugUndefined",
+        "StrictUndefined",
+    ]
+
+    @staticmethod
+    def class_for_name(module_name, class_name):
+        """Load Class"""
+        # load the module, will raise ImportError if module cannot be loaded
+        m = importlib.import_module(module_name)
+        # get the class, will raise AttributeError if class cannot be found
+        c = getattr(m, class_name)
+        return c
 
     def add_variables(self, variables):
         """
