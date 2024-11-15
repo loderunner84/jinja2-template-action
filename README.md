@@ -118,6 +118,18 @@ For previous ENV example, jinja template will be:
 {{ EXEMPLE_MY_VAR }}
 ```
 
+### Using URL data source
+
+URL can also be used as data source, in the same previous format.
+The exemple below see the use of a data file from another repository.
+
+```yaml
+- uses: fletort/jinja2-template-action@v1
+  with:
+    data_url: https://raw.githubusercontent.com/owner/anoter-repo/refs/heads/main/my_var.yml
+    data_format: yaml # can be detected automatically (see below)
+```
+
 ### Using Workflow GitHub contextual Information
 
 Some of the [contextual information about workflow runs](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs)
