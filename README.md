@@ -22,6 +22,7 @@ with the jinja2 library.
   - From variable given in input,
   - From local data files in multipe possible format (`env`, `yaml`, `json`, `ini`)
   - From URL source in multipe possible format (`env`, `yaml`, `json`, `ini`)
+- The behaviour of the jinje2 engine on not defined value can be defined
 
 ## Usage
 
@@ -155,7 +156,52 @@ underscore in jinja expression: `${{ strategy.job-index }}` becomes
 | `data_format` | Format of the `data_file`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detection is based on the extension then on the content. | `automatic` |
 | `data_url` | URL Link contening inputs variable for the jinja template. | "" |
 | `data_url_format` | Format of the `data_url`. Can be `env`, `ini`, `yaml`, `json` or `automatic` (for automatic detection). The automatic detection is based on the http header content-type then on the content itself. | `automatic` |
+| `undefined_behaviour` | Define the behaviour when a not defined variable is found. Can be `Undefined`, `ChainableUndefined`, `DebugUndefined` or `StrictUndefined`. [See below for more information.](#undefined-behaviour) | `Undefined` |
 <!-- prettier-ignore-end -->
+
+#### Undefined Behaviour
+
+It is possible to define how jinja 2 engine manage undefined value.
+Actually only behavior [proposed by Jinja2 library](https://jinja.palletsprojects.com/en/stable/api/#undefined-types)
+can be used: `Undefined`, `ChainableUndefined`, `DebugUndefined` or `StrictUndefined`.
+
+When a simple variable is not defined:
+
+- `Undefined` and `ChainableUndefined` return an empty string
+- `DebugUndefined` keeps the variable name
+- `StrictUndefined` raises en error
+
+When trying to accessing a undefined key of an existing dictionnary:
+
+- `Undefined` and `ChainableUndefined` return an empty string
+- `DebugUndefined` write a warning of type
+  `{{ no such element: dict object['my_key'] }}`
+- `StrictUndefined` raises en error
+
+When trying to accessing a undefined key of an undefined dictionnary:
+
+- `Undefined`, `DebugUndefined` and `StrictUndefined` raises en error
+- `ChainableUndefined` return an empty string
+
+For exemple with the following data:
+
+```yaml
+defined: value
+with_key:
+  ok: toto
+```
+
+Results are:
+
+| Test / Behavior       | Undefined | ChainableUndefined | DebugUndefined                             | StrictUndefined |
+| --------------------- | --------- | ------------------ | ------------------------------------------ | --------------- |
+| `{{ defined }}`       | 'value'   | 'value'            | 'value'                                    | 'value'         |
+| `{{ not_defined }}`   | ''        | ''                 | '{{ not_defined }}'                        | **ERROR**       |
+| `{{ with_key.ok }}`   | 'toto'    | 'toto'             | 'toto'                                     | 'toto'          |
+| `{{ with_key.ko }}`   | ''        | ''                 | "{{ no such element: dict object['ko'] }}" | **ERROR**       |
+| `{{ not_defined.t }}` | **ERROR** | ''                 | **ERROR**                                  | **ERROR**       |
+| `{{ with_key.ok.a }}` | ''        | ''                 | "{{ no such element: str object['a'] }}"   | **ERROR**       |
+| `{{ with_key.ko.a }}` | **ERROR** | ''                 | **ERROR**                                  | **ERROR**       |
 
 ## Code Quality
 

@@ -34,6 +34,25 @@ class TestEntrypoint(unittest.TestCase):
         self.assertFalse(main_class_mock.call_args.kwargs.get("keep_template"))
 
     @patch("entrypoint.Main", spec=True)
+    def test_main_undefined_behaviour(self, main_class_mock):
+        """
+        entrypoint.main unittest: If undefined_behaviour option is used on the cli,
+        main class must be initialized with the given undefined_behaviour if not default
+        'Undefined' value must be used.
+        """
+        # Call the Method with undefined_behaviour
+        runner = CliRunner()
+        runner.invoke(main, ["--undefined_behaviour=StrangeTest"])
+
+        self.assertEqual(
+            "StrangeTest", main_class_mock.call_args.kwargs.get("undefined")
+        )
+
+        # Call the Method without keep_template
+        runner.invoke(main)
+        self.assertEqual("Undefined", main_class_mock.call_args.kwargs.get("undefined"))
+
+    @patch("entrypoint.Main", spec=True)
     def test_main_en_var(self, main_class_mock):
         """
         entrypoint.main unittest: If a var file is given, add_variables
