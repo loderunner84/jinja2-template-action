@@ -1,4 +1,4 @@
-name: 'Continuous Testing'
+name: "Continuous Testing"
 
 on:
   push:
@@ -54,17 +54,19 @@ jobs:
           hide_complexity: true
           indicators: true
           output: both
-          thresholds: '60 80'
-      
+          thresholds: "60 80"
+
       # As irongut/CodeCoverageSummary does not support file by file mode, add it
       # See https://github.com/irongut/CodeCoverageSummary/issues/236
       - name: Write Coverage to Job Summary
         run: |
-          cat code-coverage-results.md > my-code-coverage-results.md
-          echo "\`\`\`" >> my-code-coverage-results.md
-          coverage report >> my-code-coverage-results.md
-          echo "\`\`\`" >> my-code-coverage-results.md
-          cat my-code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+          {
+            cat code-coverage-results.md
+            echo "\`\`\`"
+            coverage report
+            echo "\`\`\`"
+          } > my-code-coverage-results.md
+          echo my-code-coverage-results.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Add Coverage PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
@@ -72,7 +74,7 @@ jobs:
         with:
           recreate: true
           path: my-code-coverage-results.md
-          
+
       - name: Testspace client install & config
         id: testspace_init
         if: always() && hashFiles('report.xml') != ''
@@ -87,14 +89,14 @@ jobs:
           REGEX="(https://[a-z0-9]+.testspace.com/spaces/[0-9]+/result_sets/[0-9]+)"
           [[ $output =~ $REGEX ]]
           result_set_link="${BASH_REMATCH[1]}"
-          echo "[TestSpace Test Result set]($result_set_link)" >> $GITHUB_STEP_SUMMARY
+          echo "[TestSpace Test Result set]($result_set_link)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish Test Results in GitHub
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
           files: report.xml
-          check_name: 'Unit Test Results'
+          check_name: "Unit Test Results"
 
   test-action-matrix:
     name: Test With Matrix
@@ -105,7 +107,7 @@ jobs:
     strategy:
       matrix:
         test: [1]
-    env: 
+    env:
       VAR_TEST1_VALUE: mytest
       VAR_TEST2_VALUE: isfunny
       FILE_KEY_1_VALUE: myfile
@@ -153,18 +155,29 @@ jobs:
           echo "${{ env.FILE_KEY_1_VALUE }}" >> expected
           echo "{{ exemple.FILE_KEY_2 }}" >> all_test.j2
           echo "${{ env.FILE_KEY_2_VALUE }}" >> expected
+          echo "{{ url.URL_KEY_1 }}" >> all_test.j2
+          echo "from_url" >> expected
+          echo "{{ url.URL_KEY_2 }}" >> all_test.j2
+          echo "it_is_working" >> expected
 
           echo "" >> all_test.j2
           cat all_test.j2
           cat expected
 
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> "$GITHUB_OUTPUT"
+        id: extract_branch
+
       - name: Test Local Action
         id: test-action
-        uses: ./   
+        uses: ./
         with:
           #keep_template: true
           data_file: test-data.yml
           data_format: yaml
+          data_url: https://raw.githubusercontent.com/${{ github.repository }}/refs/heads/${{ steps.extract_branch.outputs.branch }}/test/url_data.yml
+          data_url_format: yaml
           variables: |
             TEST1=${{ env.VAR_TEST1_VALUE }}
             TEST2=${{ env.VAR_TEST2_VALUE }}
@@ -191,7 +204,7 @@ jobs:
         if: always()
         with:
           files: report.xml
-          check_name: 'Integ Test Results'
+          check_name: "Integ Test Results"
 
   test-action-no-matrix:
     name: Test Without Matrix
@@ -199,7 +212,7 @@ jobs:
     permissions:
       checks: write
       pull-requests: write
-    env: 
+    env:
       VAR_TEST1_VALUE: mytest
       VAR_TEST2_VALUE: isfunny
       FILE_KEY_1_VALUE: myfile
@@ -233,6 +246,9 @@ jobs:
           echo "${{ runner.os }}" >> expected
           echo "{{ strategy.job_index }}" >> all_test.j2
           echo "${{ strategy.job-index }}" >> expected
+          echo "{{ matrix.test }}" >> all_test.j2
+          # Test ChainableUndefined
+          echo "" >> expected
           echo "{{ environ('TEST') }}" >> all_test.j2
           echo "${{ env.TEST }}" >> expected
           echo "{{ TEST1 }}" >> all_test.j2
@@ -252,9 +268,10 @@ jobs:
 
       - name: Test Local Action
         id: test-action
-        uses: ./   
+        uses: ./
         with:
           #keep_template: true
+          undefined_behaviour: ChainableUndefined # Use to test if undefined_behaviour is managed by the action
           data_file: test-data.yml
           data_format: yaml
           variables: |
@@ -283,8 +300,4 @@ jobs:
         if: always()
         with:
           files: report.xml
-          check_name: 'Integ Test Results'
-
-
-
-
+          check_name: "Integ Test Results"
