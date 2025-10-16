@@ -1,6 +1,7 @@
 """Main file of the jinja2-template-action action."""
 
 import importlib
+import base64
 import json
 import os
 
