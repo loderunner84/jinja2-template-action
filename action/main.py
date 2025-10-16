@@ -28,6 +28,8 @@ class Main:
         self.env = Environment(
             loader=FileSystemLoader(self.basepath), undefined=undefined_class
         )
+        # Add some custom filters
+        self.env.filters['b64encode'] = base64.b64encode
         self.data = {}
         # Keep the environ method in template as whe have in the
         # jinja2 cli in the first version of this action
